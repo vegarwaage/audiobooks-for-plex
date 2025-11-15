@@ -1,0 +1,8 @@
+<strings>
+    <string id="AppName">Audiobooks for Plex</string>
+    <string id="MenuTitle">Audiobooks</string>
+    <string id="Loading">Loading...</string>
+    <string id="Error">Error</string>
+    <string id="NoBooks">No audiobooks found</string>
+    <string id="Collections">Collections</string>
+</strings>

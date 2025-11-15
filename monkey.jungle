@@ -1,0 +1,5 @@
+project.manifest = manifest.xml
+
+# Forerunner 970 target
+fr970.sourcePath = source
+fr970.resourcePath = resources
