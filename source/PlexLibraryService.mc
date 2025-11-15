@@ -48,16 +48,24 @@ class PlexLibraryService {
 
     // --- Library Section Discovery ---
 
-    function findLibrarySection(callback) {
+    function findLibrarySection() {
         if (!hasValidConfiguration()) {
-            callback.invoke({
-                :success => false,
-                :error => "No auth token configured"
-            });
+            if (_sectionsCallback != null) {
+                _sectionsCallback.invoke({
+                    :success => false,
+                    :error => "No auth token configured"
+                });
+                _sectionsCallback = null;
+            }
+            if (_booksCallback != null) {
+                _booksCallback.invoke({
+                    :success => false,
+                    :error => "No auth token configured"
+                });
+                _booksCallback = null;
+            }
             return;
         }
-
-        _sectionsCallback = callback;
 
         var url = _serverUrl + "/library/sections";
         var params = {
@@ -102,6 +110,14 @@ class PlexLibraryService {
                     _sectionsCallback = null;
                 }
             } else {
+                // Invoke BOTH callbacks with error
+                if (_booksCallback != null) {
+                    _booksCallback.invoke({
+                        :success => false,
+                        :error => "Library '" + _libraryName + "' not found"
+                    });
+                    _booksCallback = null;
+                }
                 if (_sectionsCallback != null) {
                     _sectionsCallback.invoke({
                         :success => false,
@@ -109,9 +125,16 @@ class PlexLibraryService {
                     });
                     _sectionsCallback = null;
                 }
-                _booksCallback = null;
             }
         } else {
+            // Invoke BOTH callbacks with HTTP error
+            if (_booksCallback != null) {
+                _booksCallback.invoke({
+                    :success => false,
+                    :error => "HTTP " + responseCode
+                });
+                _booksCallback = null;
+            }
             if (_sectionsCallback != null) {
                 _sectionsCallback.invoke({
                     :success => false,
@@ -119,7 +142,6 @@ class PlexLibraryService {
                 });
                 _sectionsCallback = null;
             }
-            _booksCallback = null;
         }
     }
 
@@ -164,7 +186,7 @@ class PlexLibraryService {
 
         if (_librarySectionId == null) {
             // Need to find library section first
-            findLibrarySection(callback);
+            findLibrarySection();
             return;
         }
 
