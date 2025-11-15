@@ -7,6 +7,12 @@
 
 ## Executive Summary
 
+**M4V files:** ❌ **NOT SUPPORTED**
+- M4V is a video container format (Apple's variant of MP4)
+- Garmin watches are audio-only devices
+- No video playback capability
+- If you have M4V files, extract audio to M4A/MP3 format
+
 **M4B file playback:** ✅ **SUPPORTED**
 - M4B files play successfully on Garmin watches
 - Use `Media.AUDIO_FORMAT_M4A` encoding constant
@@ -18,6 +24,11 @@
 - Only time-based navigation available (30-second skip forward/backward)
 
 **Recommendation:** Use multi-file audiobooks (one file per chapter) for optimal user experience.
+
+**File Size and Duration Limits:**
+- **Maximum file size:** 2GB per audio file (Garmin device limitation)
+- **Navigation bugs:** Long files (10+ hours) experience unreliable 30-second skip
+- **Recommended duration:** 15-60 minutes per file to avoid navigation issues
 
 ---
 
@@ -80,6 +91,111 @@ User wants to skip to Chapter 15:
 ✅ Press play - starts at correct chapter
 ✅ Next/Previous buttons navigate chapters naturally
 ```
+
+---
+
+## File Size and Duration Limits
+
+### Maximum File Size: 2GB
+
+**Evidence:**
+- Garmin support documentation mentions "Devices Unable to Read Files Larger than 2GB in Size"
+- This appears to be a firmware/hardware limitation across Garmin devices
+- Affects all file types including audio files
+
+**Practical Impact:**
+```
+Audiobook Duration at Different Bitrates:
+
+128 kbps (typical audiobook quality):
+- 10 hours = ~600 MB ✅
+- 20 hours = ~1.2 GB ✅
+- 30 hours = ~1.8 GB ✅
+- 35 hours = ~2.1 GB ❌ (exceeds limit)
+
+64 kbps (lower quality):
+- 20 hours = ~600 MB ✅
+- 40 hours = ~1.2 GB ✅
+- 60 hours = ~1.8 GB ✅
+- 70+ hours = 2+ GB ❌ (exceeds limit)
+
+320 kbps (high quality):
+- 4 hours = ~600 MB ✅
+- 8 hours = ~1.2 GB ✅
+- 12 hours = ~1.8 GB ✅
+- 14+ hours = 2+ GB ❌ (exceeds limit)
+```
+
+### Navigation Bugs with Long Files
+
+**User Reports (Garmin Forums):**
+
+> **"Audio skip ahead/back is very buggy for long (audiobook) files"**
+> - Fenix 6 Series user report
+> - The player is "apparently meant for music tracks of a few minutes"
+> - 30-second skip becomes unreliable with long audiobook files
+> - Sometimes jumps hours instead of seconds
+> - Unpredictable and frustrating user experience
+
+**Symptoms:**
+- 30-second skip jumps arbitrary amounts of time
+- May jump hours forward or backward unexpectedly
+- Seeking becomes unusable for long files (10+ hours)
+- Position tracking less precise
+
+**Common Workarounds:**
+- Split audiobooks into 30-minute segments
+- Create chapter-based files (15-60 minutes each)
+- Avoid single files longer than a few hours
+
+### Maximum Number of Files: 500
+
+**Official Specification:**
+- Garmin watches can store up to 500 audio files (if memory allows)
+- Applies to all music-enabled watches (Forerunner, Fenix, Venu series)
+
+**Impact on Audiobooks:**
+```
+Example 1: 50-hour audiobook
+- Split into 30-minute chapters = 100 files ✅ (well under 500 limit)
+- Split into 1-hour chapters = 50 files ✅ (excellent)
+
+Example 2: User's entire library (10 audiobooks)
+- 10 books × 40 chapters avg = 400 files ✅ (within limit)
+- 10 books × 60 chapters avg = 600 files ❌ (exceeds limit)
+
+Example 3: Mix of audiobooks and music
+- 5 audiobooks (200 files) + 250 songs = 450 files ✅
+```
+
+**Recommendation:**
+- Target 20-50 files per audiobook (chapters)
+- Total library: Stay under 400 files to leave room for other content
+
+### Playlist Size Limitations
+
+**User Experience Reports:**
+- Very large playlists (150+ songs) have sync issues
+- Recommended: Break into chunks of ~100 songs/tracks
+- Forerunner 965 "does NOT like REALLY BIG playlists"
+
+**Impact on PlexRunner:**
+- Each audiobook = one playlist (all chapters)
+- Target: 20-50 chapters per audiobook
+- Well within playlist comfort zone
+
+### Storage Capacity by Device
+
+| Device | Total Storage | Music Storage | Typical Audiobooks |
+|--------|---------------|---------------|--------------------|
+| Forerunner 245 Music | 8GB | ~3.5 GB | 7-10 books |
+| Forerunner 645 Music | 8GB | ~4 GB | 8-12 books |
+| Forerunner 945 | 16GB | ~7 GB | 15-20 books |
+| Forerunner 965 | 32GB | ~8-10 GB | 20-30 books |
+| Forerunner 970 | 32GB | ~8-10 GB | 20-30 books |
+| Fenix 7/8 Pro | 32GB | ~8-10 GB | 20-30 books |
+
+*Assumes average audiobook: 300-500 MB*
 
 ---
 
@@ -377,6 +493,63 @@ For single-file audiobooks:
 - Platform: Garmin native music player
 
 **Key Difference:** iOS and Android players expose chapter metadata; Garmin's does not.
+
+---
+
+## M4V Format (Video) - Not Supported
+
+### What is M4V?
+
+**M4V** is a video container format developed by Apple:
+- Similar to MP4, but with Apple-specific features
+- Typically contains H.264 video + AAC audio
+- Often used for iTunes video purchases and rentals
+- May include DRM (FairPlay) protection
+
+### Why M4V Doesn't Work on Garmin
+
+**Garmin watches are audio-only devices:**
+- ❌ No video playback capability
+- ❌ No screen suitable for video viewing (too small, low refresh rate)
+- ❌ Battery life insufficient for video playback
+- ❌ Hardware not designed for video decoding
+
+**File format incompatibility:**
+- M4V files contain video streams
+- Garmin's music player only recognizes audio streams
+- Even if M4V contains audio, the container won't be recognized
+
+### If You Have M4V Files
+
+**Option 1: Extract Audio (Recommended)**
+```bash
+# Using ffmpeg to extract audio from M4V
+ffmpeg -i audiobook.m4v -vn -acodec copy audiobook.m4a
+
+# Or convert to MP3
+ffmpeg -i audiobook.m4v -vn -acodec libmp3lame -b:a 128k audiobook.mp3
+```
+
+**Option 2: Check Source**
+- Most audiobooks should be distributed as audio-only (M4B, M4A, MP3)
+- If you received M4V, it may be a video file (e.g., audiobook with visuals)
+- Contact source provider for proper audio-only version
+
+**Option 3: Use Plex Server Processing**
+- Plex can transcode/extract audio from video files
+- Configure Plex to serve audio-only stream
+- However, this is not ideal - prefer native audio files
+
+### Format Confusion: M4A vs M4B vs M4V
+
+| Format | Type | Extension | Garmin Support | Use Case |
+|--------|------|-----------|----------------|----------|
+| **M4A** | Audio | .m4a | ✅ YES | Music, audiobooks |
+| **M4B** | Audio | .m4b | ✅ YES | Audiobooks (with chapters) |
+| **M4V** | Video | .m4v | ❌ NO | iTunes videos, movies |
+| **MP4** | Video/Audio | .mp4 | ⚠️ Maybe | If audio-only, might work |
+
+**Important:** Just because a file has ".m4x" extension doesn't mean it's the same type!
 
 ---
 

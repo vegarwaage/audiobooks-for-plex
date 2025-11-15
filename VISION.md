@@ -156,13 +156,23 @@ Detect audio format from Plex metadata dynamically:
 - Match Plex container type to Garmin encoding constant
 - Avoid hardcoding format assumptions
 
-**M4B and Chapter Navigation:**
+**M4B and Single-File Audiobooks:**
 - M4B files (audiobook format) play successfully on Garmin watches using M4A encoding
 - **Important limitation:** Garmin's native Music Player does not recognize embedded chapter markers
 - Single-file audiobooks with chapter markers will play as one continuous track
 - Time-based controls only (30-second skip forward/backward)
-- **Recommended approach:** Use multi-file audiobooks (one file per chapter) for optimal chapter navigation
+
+**File Size and Duration Constraints:**
+- **Maximum file size:** 2GB per audio file (Garmin device limitation)
+- **Navigation issues:** Long files (10+ hours) experience buggy skip behavior
+- 30-second skip function becomes unreliable, may jump hours unexpectedly
+- **Recommended file duration:** 15-60 minutes per file for optimal experience
+- Common practice: Split audiobooks into 30-minute segments
+
+**Recommended Approach:**
+- Use multi-file audiobooks (one file per chapter)
 - Each chapter file becomes a "track" allowing natural next/previous navigation
+- Optimal file size: 15-60 minutes, well under 2GB limit
 - Alternative: Server-side splitting of M4B files into chapter files (future enhancement)
 
 ---
