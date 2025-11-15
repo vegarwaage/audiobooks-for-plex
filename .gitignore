@@ -1,4 +1,5 @@
 # Developer keys (private)
+developer_key
 *.der
 *.pem
 
