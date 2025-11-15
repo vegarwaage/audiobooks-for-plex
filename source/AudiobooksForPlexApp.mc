@@ -55,6 +55,17 @@ class AudiobooksForPlexApp extends Application.AudioContentProviderApp {
         System.println("Note: Open native Music Player app to start playback");
     }
 
+    // Override AudioContentProviderApp method to provide delegate to Music Player
+    function getContentDelegate(args) {
+        System.println("Music Player requesting ContentDelegate");
+
+        if (_currentContentDelegate == null) {
+            System.println("WARNING: No audiobook loaded");
+        }
+
+        return _currentContentDelegate;
+    }
+
     function getCurrentContentDelegate() {
         return _currentContentDelegate;
     }
