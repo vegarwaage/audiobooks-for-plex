@@ -11,6 +11,14 @@ class LibraryBrowserMenu extends WatchUi.Menu2 {
     function initialize() {
         Menu2.initialize({:title => "Audiobooks"});
 
+        // Add refresh action at top
+        addItem(new WatchUi.MenuItem(
+            "Refresh Library",
+            "Update from Plex",
+            :refresh,
+            {}
+        ));
+
         loadBooks();
     }
 
