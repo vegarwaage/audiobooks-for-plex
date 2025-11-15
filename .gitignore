@@ -1,0 +1,14 @@
+# Developer keys (private)
+*.der
+*.pem
+
+# Build outputs
+bin/
+gen/
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
