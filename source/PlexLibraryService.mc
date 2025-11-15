@@ -14,6 +14,7 @@ class PlexLibraryService {
     private var _librarySectionId;
     private var _booksCallback;
     private var _sectionsCallback;
+    private var _metadataCallback;
 
     function initialize() {
         loadConfiguration();
@@ -275,5 +276,105 @@ class PlexLibraryService {
 
         System.println("Parsed " + books.size() + " books");
         return books;
+    }
+
+    // --- Fetch Audiobook Metadata (Chapters) ---
+
+    function fetchAudiobookMetadata(ratingKey, callback) {
+        _metadataCallback = callback;
+
+        var url = _serverUrl + "/library/metadata/" + ratingKey;
+        var params = {
+            "X-Plex-Token" => _authToken
+        };
+        var options = {
+            :method => Communications.HTTP_REQUEST_METHOD_GET,
+            :headers => {
+                "Accept" => Communications.REQUEST_CONTENT_TYPE_JSON
+            },
+            :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON
+        };
+
+        Communications.makeWebRequest(
+            url,
+            params,
+            options,
+            method(:onMetadataReceived)
+        );
+    }
+
+    function onMetadataReceived(responseCode as Lang.Number, data as Lang.Dictionary or Null) as Void {
+        System.println("Metadata response: " + responseCode);
+
+        if (_metadataCallback == null) {
+            System.println("WARNING: No metadata callback set");
+            return;
+        }
+
+        if (responseCode == 200) {
+            var chapters = parseChapters(data);
+            _metadataCallback.invoke({
+                :success => true,
+                :chapters => chapters
+            });
+        } else {
+            _metadataCallback.invoke({
+                :success => false,
+                :error => "HTTP " + responseCode
+            });
+        }
+
+        _metadataCallback = null;
+    }
+
+    function parseChapters(data) {
+        // Parse JSON to extract chapter/part information
+        // Plex API: MediaContainer.Metadata[0].Media[0].Part[]
+        // Each Part has: key (URL path), duration, container (format)
+
+        var chapters = [];
+
+        if (data == null) {
+            return chapters;
+        }
+
+        var mediaContainer = data.get("MediaContainer");
+        if (mediaContainer == null) {
+            return chapters;
+        }
+
+        var metadata = mediaContainer.get("Metadata");
+        if (metadata == null || metadata.size() == 0) {
+            return chapters;
+        }
+
+        var item = metadata[0];
+        var mediaArray = item.get("Media");
+        if (mediaArray == null || mediaArray.size() == 0) {
+            return chapters;
+        }
+
+        var media = mediaArray[0];
+        var parts = media.get("Part");
+        if (parts == null) {
+            return chapters;
+        }
+
+        // Extract chapter info from parts
+        for (var i = 0; i < parts.size(); i++) {
+            var part = parts[i];
+
+            var chapter = {
+                :key => part.get("key"),              // URL path
+                :duration => part.get("duration"),     // milliseconds
+                :container => part.get("container"),   // mp3, m4a, m4b, etc.
+                :size => part.get("size")              // bytes
+            };
+
+            chapters.add(chapter);
+        }
+
+        System.println("Parsed " + chapters.size() + " chapters");
+        return chapters;
     }
 }

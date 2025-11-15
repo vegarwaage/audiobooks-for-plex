@@ -25,7 +25,30 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         System.println("Selected: " + item.getLabel());
         System.println("Book ID: " + itemId);
 
-        // TODO: In later phases, show download confirmation
+        // TEST: Fetch metadata for selected book
+        testFetchMetadata(itemId);
+    }
+
+    function testFetchMetadata(bookId) {
+        var app = Application.getApp();
+        var plexService = app.getPlexService();
+
+        System.println("Fetching metadata for book: " + bookId);
+        plexService.fetchAudiobookMetadata(bookId, new Lang.Method(self, :onMetadataLoaded));
+    }
+
+    function onMetadataLoaded(result) {
+        if (result[:success]) {
+            System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
+
+            // Print first chapter as sample
+            if (result[:chapters].size() > 0) {
+                var ch = result[:chapters][0];
+                System.println("Chapter 1: key=" + ch[:key] + ", duration=" + ch[:duration] + "ms, format=" + ch[:container]);
+            }
+        } else {
+            System.println("Metadata load failed: " + result[:error]);
+        }
     }
 
     function onBack() {

@@ -88,6 +88,29 @@ class StorageManager {
         return Storage.getValue(KEY_CURRENT_BOOK_ID);
     }
 
+    // --- Chapters ---
+
+    function setChapters(bookId, chapters) {
+        var key = "chapters_" + bookId;
+        Storage.setValue(key, chapters);
+    }
+
+    function getChapters(bookId) {
+        var key = "chapters_" + bookId;
+        return Storage.getValue(key);
+    }
+
+    // --- Current Book Metadata ---
+
+    function setCurrentBookMetadata(bookId, metadata) {
+        Storage.setValue("current_book_meta", metadata);
+        Storage.setValue("current_book_id", bookId);
+    }
+
+    function getCurrentBookMetadata() {
+        return Storage.getValue("current_book_meta");
+    }
+
     // --- Utility ---
 
     function clearAllData() {
@@ -100,5 +123,9 @@ class StorageManager {
         System.println("Collection IDs: " + getCollectionIds());
         System.println("All book IDs: " + getAllBookIds());
         System.println("Current book: " + getCurrentBookId());
+        var meta = getCurrentBookMetadata();
+        if (meta != null) {
+            System.println("Current book meta: " + meta[:title]);
+        }
     }
 }
