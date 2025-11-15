@@ -3,11 +3,17 @@
 
 using Toybox.Application;
 using Toybox.WatchUi;
+using Toybox.Lang;
 
 class AudiobooksForPlexApp extends Application.AppBase {
 
+    private var _plexService;
+    private var _storageManager;
+
     function initialize() {
         AppBase.initialize();
+        _plexService = new PlexLibraryService();
+        _storageManager = new StorageManager();
     }
 
     function onStart(state) {
@@ -22,6 +28,14 @@ class AudiobooksForPlexApp extends Application.AppBase {
         var view = new MainView();
         var delegate = new MainDelegate();
         return [view, delegate];
+    }
+
+    function getPlexService() {
+        return _plexService;
+    }
+
+    function getStorageManager() {
+        return _storageManager;
     }
 }
 

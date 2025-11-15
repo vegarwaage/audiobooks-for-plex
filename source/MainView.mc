@@ -3,6 +3,8 @@
 
 using Toybox.WatchUi;
 using Toybox.Graphics;
+using Toybox.Application;
+using Toybox.Lang;
 
 class MainView extends WatchUi.View {
 
@@ -15,7 +17,27 @@ class MainView extends WatchUi.View {
     }
 
     function onShow() {
-        // View is displayed
+        // Test Plex connection when view shows
+        var app = Application.getApp();
+        var plexService = app.getPlexService();
+
+        plexService.fetchAllBooks(new Lang.Method(self, :onBooksLoaded));
+    }
+
+    function onBooksLoaded(result) {
+        if (result[:success]) {
+            System.println("SUCCESS: Loaded " + result[:books].size() + " books");
+
+            // Print first book as sample
+            if (result[:books].size() > 0) {
+                var book = result[:books][0];
+                System.println("First book: " + book[:title] + " by " + book[:author]);
+            }
+        } else {
+            System.println("ERROR: " + result[:error]);
+        }
+
+        WatchUi.requestUpdate();
     }
 
     function onUpdate(dc) {
