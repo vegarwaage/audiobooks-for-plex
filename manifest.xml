@@ -15,7 +15,7 @@
 
         <iq:permissions>
             <iq:uses-permission id="Communications"/>
-            <iq:uses-permission id="PersistedContent"/>
+            <iq:uses-permission id="Media"/>
         </iq:permissions>
 
         <iq:languages>
