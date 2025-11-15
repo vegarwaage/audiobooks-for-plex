@@ -24,6 +24,12 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
             return;
         }
 
+        if (itemId == :current_book) {
+            System.println("Playing current book");
+            playCurrentBook();
+            return;
+        }
+
         System.println("Selected: " + item.getLabel());
         System.println("Book ID: " + itemId);
 
@@ -113,6 +119,31 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         storage.setLibrarySyncTime(now);
 
         System.println("Cached " + bookIds.size() + " books");
+    }
+
+    function playCurrentBook() {
+        var app = Application.getApp();
+        var delegate = app.getCurrentContentDelegate();
+
+        if (delegate == null) {
+            System.println("ERROR: No ContentDelegate available");
+            showError("Book not loaded.\nPlease re-download.");
+            return;
+        }
+
+        // ContentDelegate already exists with ContentRefs
+        // Just notify user to open Music Player
+        System.println("Current book ready for playback");
+        System.println("Note: User must open Music Player to start playback");
+
+        // Show message to user
+        var message = "Book ready!\nOpen Music Player to play.";
+        var dialog = new WatchUi.Confirmation(message);
+        WatchUi.pushView(
+            dialog,
+            new ErrorDelegate(),
+            WatchUi.SLIDE_UP
+        );
     }
 }
 

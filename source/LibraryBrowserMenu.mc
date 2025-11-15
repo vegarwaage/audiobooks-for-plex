@@ -19,7 +19,33 @@ class LibraryBrowserMenu extends WatchUi.Menu2 {
             {}
         ));
 
+        // Check for current downloaded book
+        loadCurrentBook();
+
         loadBooks();
+    }
+
+    function loadCurrentBook() {
+        var app = Application.getApp();
+        var storage = app.getStorageManager();
+        var delegate = app.getCurrentContentDelegate();
+
+        // Only show current book if ContentDelegate exists (book is in memory)
+        if (delegate != null) {
+            var metadata = storage.getCurrentBookMetadata();
+
+            if (metadata != null) {
+                System.println("Current book found: " + metadata[:title]);
+
+                // Add with play symbol prefix
+                addItem(new WatchUi.MenuItem(
+                    "▶ " + metadata[:title],
+                    metadata[:author],
+                    :current_book,  // Special identifier
+                    {}
+                ));
+            }
+        }
     }
 
     function loadBooks() {
