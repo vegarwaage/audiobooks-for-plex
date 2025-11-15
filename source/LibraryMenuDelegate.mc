@@ -6,6 +6,7 @@ using Toybox.System;
 using Toybox.Application;
 using Toybox.Time;
 using Toybox.Lang;
+using Toybox.Media;
 using AudioFormatDetector;
 
 class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
@@ -70,6 +71,31 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     function onDownloadComplete(result) {
         System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
+
+        // TEST: Create ContentDelegate and log
+        testContentDelegate(result[:contentRefs]);
+    }
+
+    function testContentDelegate(contentRefs) {
+        var delegate = new AudiobookContentDelegate(
+            "test_book_123",
+            "Foundation",
+            "Isaac Asimov",
+            contentRefs,
+            0  // Start at chapter 0
+        );
+
+        // Test getContent()
+        var content = delegate.getContent();
+        System.println("ContentIterator created successfully");
+
+        // Test event handling (mock events)
+        // Use first contentRef as the ID for testing
+        var testRefId = contentRefs.size() > 0 ? contentRefs[0] : "test_ref_id";
+        delegate.onSong(testRefId, Media.SONG_EVENT_START, 0);
+        delegate.onSong(testRefId, Media.SONG_EVENT_PAUSE, 12345);
+        delegate.onSong(testRefId, Media.SONG_EVENT_SKIP_NEXT, 0);
+        delegate.onSong(testRefId, Media.SONG_EVENT_SKIP_PREVIOUS, 0);
     }
 
     function onDownloadError(result) {
