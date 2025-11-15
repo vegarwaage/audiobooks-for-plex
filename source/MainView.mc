@@ -6,6 +6,7 @@ using Toybox.Graphics;
 using Toybox.Application;
 using Toybox.Lang;
 using Toybox.Time;
+using Toybox.System;
 
 class MainView extends WatchUi.View {
 
@@ -23,7 +24,7 @@ class MainView extends WatchUi.View {
 
         if (cachedBooks != null && cachedBooks.size() > 0) {
             System.println("Using cached books");
-            // For now just log, Menu2 UI will use these in next task
+            showLibraryMenu();
         } else {
             System.println("No cache, fetching from Plex...");
 
@@ -41,16 +42,20 @@ class MainView extends WatchUi.View {
             // Cache books to storage
             cacheBooks(result[:books]);
 
-            // Print first book as sample
-            if (result[:books].size() > 0) {
-                var book = result[:books][0];
-                System.println("First book: " + book[:title] + " by " + book[:author]);
-            }
+            // Show library browser menu
+            showLibraryMenu();
         } else {
             System.println("ERROR: " + result[:error]);
+            // Show error in UI
         }
 
         WatchUi.requestUpdate();
+    }
+
+    function showLibraryMenu() {
+        var menu = new LibraryBrowserMenu();
+        var delegate = new LibraryMenuDelegate();
+        WatchUi.pushView(menu, delegate, WatchUi.SLIDE_UP);
     }
 
     function cacheBooks(books) {
