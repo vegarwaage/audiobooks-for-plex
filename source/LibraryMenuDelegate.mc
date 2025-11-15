@@ -6,6 +6,7 @@ using Toybox.System;
 using Toybox.Application;
 using Toybox.Time;
 using Toybox.Lang;
+using AudioFormatDetector;
 
 class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
 
@@ -41,10 +42,14 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (result[:success]) {
             System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
 
-            // Print first chapter as sample
-            if (result[:chapters].size() > 0) {
-                var ch = result[:chapters][0];
-                System.println("Chapter 1: key=" + ch[:key] + ", duration=" + ch[:duration] + "ms, format=" + ch[:container]);
+            // Test format detection
+            for (var i = 0; i < result[:chapters].size(); i++) {
+                var ch = result[:chapters][i];
+                var format = AudioFormatDetector.getAudioFormat(ch[:container]);
+                var formatName = AudioFormatDetector.getFormatName(format);
+                var supported = AudioFormatDetector.isFormatSupported(ch[:container]);
+
+                System.println("Chapter " + (i + 1) + ": " + ch[:container] + " → " + formatName + " (supported: " + supported + ")");
             }
         } else {
             System.println("Metadata load failed: " + result[:error]);
