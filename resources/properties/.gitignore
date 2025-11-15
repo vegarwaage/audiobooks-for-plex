@@ -1,0 +1,3 @@
+# Ignore local property overrides (sensitive data)
+*.local.xml
+AudiobooksForPlex.set

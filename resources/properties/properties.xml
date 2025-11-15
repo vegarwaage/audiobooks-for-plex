@@ -1,0 +1,5 @@
+<properties>
+    <property id="serverUrl" type="string">http://localhost:32400</property>
+    <property id="authToken" type="string"></property>
+    <property id="libraryName" type="string">Audiobooks</property>
+</properties>
