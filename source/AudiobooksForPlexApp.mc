@@ -9,11 +9,17 @@ class AudiobooksForPlexApp extends Application.AppBase {
 
     private var _plexService;
     private var _storageManager;
+    private var _downloadManager;
 
     function initialize() {
         AppBase.initialize();
         _plexService = new PlexLibraryService();
         _storageManager = new StorageManager();
+
+        // Initialize download manager with Plex config
+        var serverUrl = Properties.getValue("serverUrl");
+        var authToken = Properties.getValue("authToken");
+        _downloadManager = new DownloadManager(serverUrl, authToken);
     }
 
     function onStart(state) {
@@ -36,6 +42,10 @@ class AudiobooksForPlexApp extends Application.AppBase {
 
     function getStorageManager() {
         return _storageManager;
+    }
+
+    function getDownloadManager() {
+        return _downloadManager;
     }
 }
 

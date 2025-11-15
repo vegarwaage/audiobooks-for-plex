@@ -42,18 +42,38 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (result[:success]) {
             System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
 
-            // Test format detection
-            for (var i = 0; i < result[:chapters].size(); i++) {
-                var ch = result[:chapters][i];
-                var format = AudioFormatDetector.getAudioFormat(ch[:container]);
-                var formatName = AudioFormatDetector.getFormatName(format);
-                var supported = AudioFormatDetector.isFormatSupported(ch[:container]);
-
-                System.println("Chapter " + (i + 1) + ": " + ch[:container] + " → " + formatName + " (supported: " + supported + ")");
-            }
+            // TEST: Start download
+            testDownload(result[:chapters]);
         } else {
             System.println("Metadata load failed: " + result[:error]);
         }
+    }
+
+    function testDownload(chapters) {
+        var app = Application.getApp();
+        var downloadManager = app.getDownloadManager();
+
+        System.println("Starting test download...");
+
+        downloadManager.downloadAudiobook(
+            "test_book_123",
+            chapters,
+            new Lang.Method(self, :onDownloadProgress),
+            new Lang.Method(self, :onDownloadComplete),
+            new Lang.Method(self, :onDownloadError)
+        );
+    }
+
+    function onDownloadProgress(progress) {
+        System.println("Download progress: Chapter " + progress[:chapter] + "/" + progress[:total] + " (" + progress[:percent] + "%)");
+    }
+
+    function onDownloadComplete(result) {
+        System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
+    }
+
+    function onDownloadError(result) {
+        System.println("Download error: " + result[:error] + " (chapter " + result[:chapter] + ")");
     }
 
     function onBack() {
