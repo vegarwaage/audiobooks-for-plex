@@ -27,72 +27,19 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         System.println("Selected: " + item.getLabel());
         System.println("Book ID: " + itemId);
 
-        // TEST: Fetch metadata for selected book
-        testFetchMetadata(itemId);
+        // Show download confirmation
+        showDownloadConfirmation(itemId, item.getLabel());
     }
 
-    function testFetchMetadata(bookId) {
-        var app = Application.getApp();
-        var plexService = app.getPlexService();
+    function showDownloadConfirmation(bookId, bookTitle) {
+        var message = "Download:\n" + bookTitle + "?";
+        var confirmation = new WatchUi.Confirmation(message);
 
-        System.println("Fetching metadata for book: " + bookId);
-        plexService.fetchAudiobookMetadata(bookId, new Lang.Method(self, :onMetadataLoaded));
-    }
-
-    function onMetadataLoaded(result) {
-        if (result[:success]) {
-            System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
-
-            // TEST: Start download
-            testDownload(result[:chapters]);
-        } else {
-            System.println("Metadata load failed: " + result[:error]);
-        }
-    }
-
-    function testDownload(chapters) {
-        var app = Application.getApp();
-        var downloadManager = app.getDownloadManager();
-
-        System.println("Starting test download...");
-
-        downloadManager.downloadAudiobook(
-            "test_book_123",
-            chapters,
-            new Lang.Method(self, :onDownloadProgress),
-            new Lang.Method(self, :onDownloadComplete),
-            new Lang.Method(self, :onDownloadError)
+        WatchUi.pushView(
+            confirmation,
+            new DownloadConfirmationDelegate(bookId, bookTitle),
+            WatchUi.SLIDE_UP
         );
-    }
-
-    function onDownloadProgress(progress) {
-        System.println("Download progress: Chapter " + progress[:chapter] + "/" + progress[:total] + " (" + progress[:percent] + "%)");
-    }
-
-    function onDownloadComplete(result) {
-        System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
-
-        // Launch Music Player with downloaded audiobook
-        launchMusicPlayer(result[:contentRefs]);
-    }
-
-    function launchMusicPlayer(contentRefs) {
-        var app = Application.getApp();
-
-        // For now, use hardcoded book info (will come from metadata in later step)
-        var bookId = "test_book_123";
-        var bookTitle = "Foundation";
-        var author = "Isaac Asimov";
-
-        // Play audiobook
-        app.playAudiobook(bookId, bookTitle, author, contentRefs, 0);
-
-        System.println("Audiobook registered with Music Player");
-        System.println("Open Music Player app to start playback");
-    }
-
-    function onDownloadError(result) {
-        System.println("Download error: " + result[:error] + " (chapter " + result[:chapter] + ")");
     }
 
     function onBack() {
@@ -166,6 +113,82 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         storage.setLibrarySyncTime(now);
 
         System.println("Cached " + bookIds.size() + " books");
+    }
+}
+
+// Confirmation delegate for download dialog
+class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
+
+    private var _bookId;
+    private var _bookTitle;
+
+    function initialize(bookId, bookTitle) {
+        ConfirmationDelegate.initialize();
+        _bookId = bookId;
+        _bookTitle = bookTitle;
+    }
+
+    function onResponse(response) {
+        if (response == WatchUi.CONFIRM_YES) {
+            System.println("Download confirmed for: " + _bookTitle);
+            startMetadataFetch();
+        } else {
+            System.println("Download cancelled");
+        }
+
+        return true;
+    }
+
+    function startMetadataFetch() {
+        var app = Application.getApp();
+        var plexService = app.getPlexService();
+
+        System.println("Fetching metadata for book: " + _bookId);
+        plexService.fetchAudiobookMetadata(_bookId, new Lang.Method(self, :onMetadataLoaded));
+    }
+
+    function onMetadataLoaded(result) {
+        if (result[:success]) {
+            System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
+            startDownload(result[:chapters]);
+        } else {
+            System.println("Metadata load failed: " + result[:error]);
+            // TODO: Show error to user
+        }
+    }
+
+    function startDownload(chapters) {
+        var app = Application.getApp();
+        var downloadManager = app.getDownloadManager();
+
+        downloadManager.downloadAudiobook(
+            _bookId,
+            chapters,
+            new Lang.Method(self, :onDownloadProgress),
+            new Lang.Method(self, :onDownloadComplete),
+            new Lang.Method(self, :onDownloadError)
+        );
+    }
+
+    function onDownloadProgress(progress) {
+        System.println("Download progress: Chapter " + progress[:chapter] + "/" + progress[:total] + " (" + progress[:percent] + "%)");
+        // TODO: Show progress UI
+    }
+
+    function onDownloadComplete(result) {
+        System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
+        launchMusicPlayer(result[:contentRefs]);
+    }
+
+    function onDownloadError(result) {
+        System.println("Download error: " + result[:error] + " (chapter " + result[:chapter] + ")");
+        // TODO: Show error to user
+    }
+
+    function launchMusicPlayer(contentRefs) {
+        var app = Application.getApp();
+        app.playAudiobook(_bookId, _bookTitle, "Unknown Author", contentRefs, 0);
+        System.println("Audiobook registered with Music Player");
     }
 }
 
