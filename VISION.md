@@ -52,9 +52,10 @@ The app eliminates the dependency on a phone connection by downloading audiobook
 - Store configuration securely on watch
 
 **Audiobook Selection**
-- Provide method for selecting which audiobooks to download
-- Minimize complexity and dependencies
-- Avoid building duplicate Plex browsing UI when possible
+- On-watch browsing of Plex audiobook library
+- Simple list-based selection interface
+- Download selected audiobooks directly to watch
+- No companion mobile app required
 
 ---
 
@@ -110,13 +111,21 @@ Use Garmin's AudioContentProviderApp framework rather than building a standalone
 
 ### Configuration Approach
 
-Prefer Garmin Connect app settings over building a companion mobile app:
-- Simpler for users (one less app to install)
-- Uses Garmin's built-in configuration sync mechanism
-- Reduces development and maintenance burden
-- Settings sync automatically to watch via Application.Properties
+**Server Configuration:**
+Use Garmin Connect app settings (Application.Properties) for basic server setup:
+- Server URL configuration
+- Plex authentication token
+- Library name (optional)
+- Settings sync automatically to watch
 
-If companion app proves necessary, it should be minimal and focused purely on audiobook selection from Plex library.
+**Audiobook Selection:**
+Use on-watch UI for browsing and selecting audiobooks from Plex library:
+- Simple list-based browsing interface
+- Direct integration with Plex API
+- No companion mobile app required for core functionality
+- Self-contained solution maintaining simplicity
+
+A companion mobile app may be added later as an optional enhancement for improved browsing experience, but is not part of the initial release.
 
 ### Development & Testing Strategy
 
@@ -147,6 +156,25 @@ Detect audio format from Plex metadata dynamically:
 - Match Plex container type to Garmin encoding constant
 - Avoid hardcoding format assumptions
 
+**M4B and Single-File Audiobooks:**
+- M4B files (audiobook format) play successfully on Garmin watches using M4A encoding
+- **Important limitation:** Garmin's native Music Player does not recognize embedded chapter markers
+- Single-file audiobooks with chapter markers will play as one continuous track
+- Time-based controls only (30-second skip forward/backward)
+
+**File Size and Duration Constraints:**
+- **Maximum file size:** 2GB per audio file (Garmin device limitation)
+- **Navigation issues:** Long files (10+ hours) experience buggy skip behavior
+- 30-second skip function becomes unreliable, may jump hours unexpectedly
+- **Recommended file duration:** 15-60 minutes per file for optimal experience
+- Common practice: Split audiobooks into 30-minute segments
+
+**Recommended Approach:**
+- Use multi-file audiobooks (one file per chapter)
+- Each chapter file becomes a "track" allowing natural next/previous navigation
+- Optimal file size: 15-60 minutes, well under 2GB limit
+- Alternative: Server-side splitting of M4B files into chapter files (future enhancement)
+
 ---
 
 ## User Workflow (when finished)
@@ -154,12 +182,13 @@ Detect audio format from Plex metadata dynamically:
 ### Initial Setup
 
 1. Install PlexRunner from Garmin Connect IQ Store
-2. Configure Plex server connection via Garmin Connect app:
+2. Configure Plex server connection via Garmin Connect app settings:
    - Server URL
    - Auth token
    - Library name (optional)
-3. Select audiobooks to download to watch
-4. Wait for audiobooks to sync to watch storage
+3. Open PlexRunner on watch and browse Plex library
+4. Select audiobooks to download
+5. Wait for audiobooks to download to watch storage
 
 ### Daily Use
 
@@ -235,6 +264,8 @@ This vision is grounded in Garmin's official documentation:
 
 *Optional features for future versions, not required for initial release:*
 
+- Companion mobile app for enhanced browsing experience
+- Server-side M4B splitting (convert single-file to multi-file chapters)
 - Playback speed control
 - Sleep timer
 - Download queue management
