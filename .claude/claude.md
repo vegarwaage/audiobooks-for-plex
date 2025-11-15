@@ -313,6 +313,65 @@ function onDownloadComplete(callback, responseCode, data) {
 
 ---
 
+## Phase 1 Implementation Notes
+
+### Menu2InputDelegate Return Types
+
+**IMPORTANT:** `Menu2InputDelegate` methods have **void return types**, not boolean.
+
+```monkey-c
+// ✅ CORRECT - void returns
+class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
+    function onSelect(item) {
+        // Handle selection
+        // No return statement (void)
+    }
+
+    function onBack() {
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
+        // No return statement (void)
+    }
+}
+```
+
+**Note:** This differs from `BehaviorDelegate` which uses `return true/false` for event handling.
+
+### Callback Pattern (API 3.0.0)
+
+**Pattern:** Use instance variables instead of `.bindWith()` (not available at API 3.0.0)
+
+```monkey-c
+class PlexLibraryService {
+    private var _callback;
+
+    function fetchBooks(callback) {
+        _callback = callback;
+        Communications.makeWebRequest(url, params, options, method(:onResponse));
+    }
+
+    function onResponse(responseCode, data) {
+        if (_callback != null) {
+            _callback.invoke({:success => true, :data => data});
+            _callback = null;  // Always clear after invoke
+        }
+    }
+}
+```
+
+**Critical:** Always invoke callbacks on ALL code paths (success AND error) or UI will hang.
+
+### Build Warnings (Expected)
+
+**Normal:** 20-25 warnings per build from dynamic container access (JSON parsing)
+
+```
+WARNING: Cannot determine if container access is using container type
+```
+
+These are expected and don't affect functionality. MonkeyC's type system can't infer types for `Dictionary.get()` operations.
+
+---
+
 ## Manifest Configuration
 
 **File:** `manifest.xml`
@@ -333,8 +392,7 @@ function onDownloadComplete(callback, responseCode, data) {
 
         <iq:permissions>
             <iq:uses-permission id="Communications"/>
-            <iq:uses-permission id="Background"/>
-            <iq:uses-permission id="Media"/>
+            <iq:uses-permission id="PersistedContent"/>
         </iq:permissions>
 
         <iq:languages>
