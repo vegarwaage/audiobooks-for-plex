@@ -372,6 +372,33 @@ These are expected and don't affect functionality. MonkeyC's type system can't i
 
 ---
 
+## Phase 2 Implementation Notes
+
+### ContentRef Constructor (API 3.0.0)
+
+**IMPORTANT:** ContentRef in API 3.0.0 takes only **2 parameters**, not 3.
+
+```monkey-c
+// ✅ CORRECT - API 3.0.0
+var contentRef = new Media.ContentRef(
+    data,                        // Encrypted audio data
+    Media.CONTENT_TYPE_AUDIO    // Content type
+);
+
+// ❌ WRONG - From newer API docs
+var contentRef = new Media.ContentRef(
+    data,
+    Media.CONTENT_TYPE_AUDIO,
+    { :encoding => format }  // This parameter doesn't exist in API 3.0.0
+);
+```
+
+**Note:** Audio format appears to be auto-detected from encrypted audio data. This has been verified to build successfully. Full playback verification requires real device testing.
+
+**Reference:** Discovered in Task 3 (DownloadManager) implementation - Phase 2
+
+---
+
 ## Manifest Configuration
 
 **File:** `manifest.xml`
