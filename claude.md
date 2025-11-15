@@ -471,6 +471,267 @@ function onDownloadComplete(callback, responseCode, data) {
 
 ---
 
+## Sideloading & Testing Settings
+
+### The Settings Problem
+
+**Important:** When sideloading .prg files during development, settings pages in Garmin Connect are **NOT available**.
+
+- ❌ Garmin Connect Mobile won't show settings UI
+- ❌ Garmin Express won't show settings UI
+- ❌ Cannot configure via phone or computer
+- ✅ **Workaround exists** (manual settings files)
+
+### Workaround: Manual Settings Files
+
+**Method 1: Copy from Simulator**
+
+1. **Configure in simulator:**
+   - Run app in Connect IQ simulator
+   - Configure settings via simulator UI
+   - Settings are fully functional in simulator
+
+2. **Find settings file:**
+   ```
+   Windows: C:\Users\[username]\AppData\Local\Temp\GARMIN\APPS\SETTINGS\PlexRunner.set
+   Mac:     Use: find /var/folders/ -name SETTINGS 2> /dev/null
+   Linux:   /tmp/GARMIN/APPS/SETTINGS/PlexRunner.set
+   ```
+
+3. **Copy to watch:**
+   ```
+   Connect watch via USB
+   Copy PlexRunner.set to: /GARMIN/APPS/SETTINGS/
+   Disconnect and restart watch
+   ```
+
+4. **Test:**
+   - Settings are now loaded on watch
+   - App reads values via `Application.Properties.getValue()`
+
+**Method 2: Manual Creation**
+
+Create `PlexRunner.set` manually:
+
+```xml
+<?xml version="1.0"?>
+<properties>
+    <property id="serverUrl">http://192.168.1.100:32400</property>
+    <property id="authToken">your-plex-token-here</property>
+    <property id="libraryName">Audiobooks</property>
+</properties>
+```
+
+Copy directly to watch: `/GARMIN/APPS/SETTINGS/PlexRunner.set`
+
+### Application Properties Setup
+
+**properties.xml (in resources/):**
+```xml
+<properties>
+    <property id="serverUrl" type="string">http://localhost:32400</property>
+    <property id="authToken" type="string"></property>
+    <property id="libraryName" type="string">Audiobooks</property>
+</properties>
+```
+
+**Reading in code:**
+```monkey-c
+using Toybox.Application;
+
+// In your app or view
+var serverUrl = Application.Properties.getValue("serverUrl");
+var authToken = Application.Properties.getValue("authToken");
+var libraryName = Application.Properties.getValue("libraryName");
+
+// Provide defaults if not set
+if (serverUrl == null || serverUrl.equals("")) {
+    serverUrl = "http://localhost:32400";
+}
+if (libraryName == null || libraryName.equals("")) {
+    libraryName = "Audiobooks";
+}
+```
+
+### Development Workflow Options
+
+**Option A: Hardcoded Values (Early Development)**
+```monkey-c
+// Temporary hardcoded values for initial testing
+const SERVER_URL = "http://192.168.1.100:32400";
+const AUTH_TOKEN = "test-token-123";
+const LIBRARY_NAME = "Audiobooks";
+
+// Later: Replace with Properties.getValue()
+```
+
+**Pros:**
+- ✅ Quick to set up
+- ✅ No file copying needed
+- ✅ Fast iteration
+
+**Cons:**
+- ⚠️ Must remember to replace with Properties later
+- ⚠️ Can't test settings changes without recompiling
+
+**Option B: Manual Settings Files (Recommended)**
+```monkey-c
+// Always use Application.Properties
+var serverUrl = Application.Properties.getValue("serverUrl");
+
+// Manually copy .set file to watch for each config change
+```
+
+**Pros:**
+- ✅ Tests real settings system
+- ✅ Same code as production
+- ✅ Easy to change settings (just edit .set file)
+
+**Cons:**
+- ⚠️ Requires manual file copying
+- ⚠️ Extra step in workflow
+
+**Option C: Simulator Testing**
+```monkey-c
+// Use Application.Properties
+// Test exclusively in simulator until settings validated
+// Then sideload to device
+```
+
+**Pros:**
+- ✅ Full settings UI in simulator
+- ✅ No manual file copying
+- ✅ Tests settings logic
+
+**Cons:**
+- ⚠️ Simulator limitations (no real audio playback)
+- ⚠️ Still need device testing eventually
+
+### Recommended Development Progression
+
+**Phase 1: MVP Core (Weeks 1-2)**
+```
+Use: Hardcoded values
+Why: Fast iteration, no settings complexity
+Focus: Get basic download and playback working
+```
+
+**Phase 2: Settings Integration (Week 3)**
+```
+Use: Manual .set files
+Why: Test real Properties system
+Focus: Validate settings read/write logic
+Create: properties.xml with all settings
+```
+
+**Phase 3: Beta Testing (Weeks 4-8)**
+```
+Use: Connect IQ Store beta release
+Why: Settings UI becomes available
+Focus: Real user testing with settings
+Users: Can configure via Garmin Connect app
+```
+
+**Phase 4: Production (Weeks 9+)**
+```
+Use: Full Connect IQ Store release
+Why: Settings fully integrated
+Users: Configure via Garmin Connect normally
+Sync: Settings sync automatically to watch
+```
+
+### Testing Settings Checklist
+
+Before moving to beta, verify:
+
+- [ ] `properties.xml` exists with all settings
+- [ ] Default values are sensible
+- [ ] `Properties.getValue()` called for each setting
+- [ ] Null/empty value handling works
+- [ ] Settings changes affect app behavior
+- [ ] Manual `.set` file copying works
+- [ ] Simulator settings UI functions correctly
+
+### When Settings UI Becomes Available
+
+**Settings pages in Garmin Connect work with:**
+- ✅ Apps in Connect IQ Store (published)
+- ✅ Beta apps (with beta testing enabled)
+- ❌ Sideloaded .prg files
+
+**Timeline:**
+```
+Development (Sideloading): Manual .set files
+↓
+Beta Release: Settings UI available
+↓
+Production Release: Full settings integration
+```
+
+### Common Issues
+
+**Problem: Settings not loading**
+```
+Check:
+1. .set file in correct location (/GARMIN/APPS/SETTINGS/)
+2. File named correctly (matches app name)
+3. XML format is valid
+4. Property IDs match properties.xml
+5. Watch restarted after copying file
+```
+
+**Problem: Settings changes not reflecting**
+```
+Solution:
+1. Edit .set file on computer
+2. Copy to watch again
+3. Restart watch
+4. Relaunch app
+```
+
+**Problem: Can't find simulator settings file**
+```
+Windows: Check %TEMP%\GARMIN\APPS\SETTINGS\
+Mac: Run: find /var -name "*.set" 2>/dev/null | grep GARMIN
+Linux: Check /tmp/GARMIN/APPS/SETTINGS/
+```
+
+### Settings File Template
+
+**PlexRunner.set template for testing:**
+```xml
+<?xml version="1.0"?>
+<properties>
+    <!-- Plex Server Configuration -->
+    <property id="serverUrl">http://192.168.1.100:32400</property>
+    <property id="authToken">YOUR_PLEX_TOKEN_HERE</property>
+    <property id="libraryName">Audiobooks</property>
+
+    <!-- Optional: Add test values -->
+    <!-- <property id="debugMode">true</property> -->
+</properties>
+```
+
+**Where to get Plex token:**
+1. Log into Plex web interface
+2. Play any media item
+3. Click "..." → Get Info → View XML
+4. Look for `X-Plex-Token` in URL
+5. OR: Settings → Account → Copy token
+
+### Reference
+
+**Documentation:**
+- `/garmin-documentation/core-topics/properties-and-app-settings.md`
+
+**Forum threads:**
+- "Modifying settings on side loaded app" (Garmin forums)
+- Workaround confirmed working by developers
+
+**Important:** This limitation only affects development. Production apps have full settings UI.
+
+---
+
 ## Token-Efficient Documentation Lookups
 
 **Instead of reading entire files, use targeted reads:**
