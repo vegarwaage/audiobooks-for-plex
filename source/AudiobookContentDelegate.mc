@@ -63,8 +63,8 @@ class AudiobookContentDelegate extends Media.ContentDelegate {
 
     // Playback paused
     private function handlePlaybackPaused(position) {
-        System.println("Playback paused at position: " + position + "ms");
-        // TODO Phase 3: Save position locally
+        System.println("Playback paused at position: " + position + "s");
+        // TODO Phase 3: Save position locally (position is in seconds)
     }
 
     // Playback completed

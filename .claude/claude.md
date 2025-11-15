@@ -397,6 +397,53 @@ var contentRef = new Media.ContentRef(
 
 **Reference:** Discovered in Task 3 (DownloadManager) implementation - Phase 2
 
+### ContentDelegate API (API 3.0.0)
+
+**Method Signature (CORRECTED):**
+
+```monkey-c
+// ✅ CORRECT - Actual API 3.0.0
+function onSong(contentRefId, songEvent, playbackPosition) {
+    // contentRefId: Reference to playing content
+    // songEvent: Event constant (see below)
+    // playbackPosition: Position in SECONDS (not milliseconds!)
+}
+
+// ❌ WRONG - From plan assumptions
+function onSongEvent(songEvent, playbackPosition) {
+    // This method name doesn't exist
+}
+```
+
+**Event Constants (CORRECTED):**
+
+```monkey-c
+// ✅ CORRECT - API 3.0.0
+Media.SONG_EVENT_START       // Not _PLAYBACK_STARTED
+Media.SONG_EVENT_PAUSE       // Not _PLAYBACK_PAUSED
+Media.SONG_EVENT_COMPLETE    // Not _PLAYBACK_COMPLETE
+Media.SONG_EVENT_SKIP_NEXT
+Media.SONG_EVENT_SKIP_PREVIOUS
+Media.SONG_EVENT_RESUME
+Media.SONG_EVENT_STOP
+```
+
+**Position Units (CRITICAL):**
+- `playbackPosition` parameter is in **SECONDS**, not milliseconds
+- This is critical for Phase 3 position tracking
+- Don't multiply/divide by 1000 when saving position
+
+**ContentIterator Constructor:**
+```monkey-c
+// ✅ API 3.0.0 - Zero parameters
+var iterator = new Media.ContentIterator();
+
+// Note: Unclear how iterator gets content refs at API 3.0.0
+// Requires real device testing for verification
+```
+
+**Reference:** Discovered in Task 4 (ContentDelegate) implementation - Phase 2
+
 ---
 
 ## Manifest Configuration
