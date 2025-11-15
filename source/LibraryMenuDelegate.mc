@@ -126,8 +126,9 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         var delegate = app.getCurrentContentDelegate();
 
         if (delegate == null) {
-            System.println("ERROR: No ContentDelegate available");
-            showError("Book not loaded.\nPlease re-download.");
+            // ContentDelegate not in memory (app was restarted)
+            System.println("WARNING: ContentDelegate not available (app restarted)");
+            showError("Book not in memory.\nPlease re-download to play.");
             return;
         }
 

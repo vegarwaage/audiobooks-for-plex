@@ -28,22 +28,25 @@ class LibraryBrowserMenu extends WatchUi.Menu2 {
     function loadCurrentBook() {
         var app = Application.getApp();
         var storage = app.getStorageManager();
-        var delegate = app.getCurrentContentDelegate();
+        var metadata = storage.getCurrentBookMetadata();
 
-        // Only show current book if ContentDelegate exists (book is in memory)
-        if (delegate != null) {
-            var metadata = storage.getCurrentBookMetadata();
+        // Show current book if metadata exists in storage (persists across restarts)
+        if (metadata != null) {
+            var title = metadata.get(:title);
+            var author = metadata.get(:author);
 
-            if (metadata != null) {
-                System.println("Current book found: " + metadata[:title]);
+            if (title != null && author != null) {
+                System.println("Current book found: " + title);
 
                 // Add with play symbol prefix
                 addItem(new WatchUi.MenuItem(
-                    "▶ " + metadata[:title],
-                    metadata[:author],
+                    "▶ " + title,
+                    author,
                     :current_book,  // Special identifier
                     {}
                 ));
+            } else {
+                System.println("WARNING: Incomplete metadata for current book");
             }
         }
     }
