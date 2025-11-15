@@ -121,12 +121,14 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
 
     private var _bookId;
     private var _bookTitle;
+    private var _bookAuthor;
     private var _progressView;
 
     function initialize(bookId, bookTitle) {
         ConfirmationDelegate.initialize();
         _bookId = bookId;
         _bookTitle = bookTitle;
+        _bookAuthor = "Unknown";
         _progressView = null;
     }
 
@@ -152,11 +154,41 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
     function onMetadataLoaded(result) {
         if (result[:success]) {
             System.println("Metadata loaded: " + result[:chapters].size() + " chapters");
+
+            // Extract and store metadata
+            _bookTitle = result[:title];
+            _bookAuthor = result[:author];
+
+            System.println("Book: " + _bookTitle + " by " + _bookAuthor);
+
+            // Save metadata to storage
+            saveMetadataToStorage(result[:title], result[:author], result[:chapters]);
+
             startDownload(result[:chapters]);
         } else {
             System.println("Metadata load failed: " + result[:error]);
-            // TODO: Show error to user
+            // Show error to user
+            var dialog = new WatchUi.Confirmation(result[:error]);
+            WatchUi.pushView(dialog, new ErrorDelegate(), WatchUi.SLIDE_UP);
         }
+    }
+
+    function saveMetadataToStorage(title, author, chapters) {
+        var app = Application.getApp();
+        var storage = app.getStorageManager();
+
+        // Save chapters
+        storage.setChapters(_bookId, chapters);
+
+        // Save current book metadata
+        var metadata = {
+            :title => title,
+            :author => author,
+            :chapterCount => chapters.size()
+        };
+        storage.setCurrentBookMetadata(_bookId, metadata);
+
+        System.println("Saved metadata: " + title + " by " + author + " (" + chapters.size() + " chapters)");
     }
 
     function startDownload(chapters) {
@@ -224,8 +256,9 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
 
     function launchMusicPlayer(contentRefs) {
         var app = Application.getApp();
-        app.playAudiobook(_bookId, _bookTitle, "Unknown Author", contentRefs, 0);
+        app.playAudiobook(_bookId, _bookTitle, _bookAuthor, contentRefs, 0);
         System.println("Audiobook registered with Music Player");
+        System.println("Book: " + _bookTitle + " by " + _bookAuthor);
     }
 }
 

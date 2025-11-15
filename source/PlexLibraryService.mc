@@ -312,10 +312,12 @@ class PlexLibraryService {
         }
 
         if (responseCode == 200) {
-            var chapters = parseChapters(data);
+            var metadata = parseMetadata(data);
             _metadataCallback.invoke({
                 :success => true,
-                :chapters => chapters
+                :title => metadata[:title],
+                :author => metadata[:author],
+                :chapters => metadata[:chapters]
             });
         } else {
             _metadataCallback.invoke({
@@ -327,37 +329,59 @@ class PlexLibraryService {
         _metadataCallback = null;
     }
 
-    function parseChapters(data) {
-        // Parse JSON to extract chapter/part information
-        // Plex API: MediaContainer.Metadata[0].Media[0].Part[]
-        // Each Part has: key (URL path), duration, container (format)
+    function parseMetadata(data) {
+        // Parse JSON to extract book metadata (title, author) and chapters
+        // Plex API: MediaContainer.Metadata[0] contains book info and Media[0].Part[] for chapters
 
-        var chapters = [];
+        var result = {
+            :title => "Unknown",
+            :author => "Unknown",
+            :chapters => []
+        };
 
         if (data == null) {
-            return chapters;
+            return result;
         }
 
         var mediaContainer = data.get("MediaContainer");
         if (mediaContainer == null) {
-            return chapters;
+            return result;
         }
 
         var metadata = mediaContainer.get("Metadata");
         if (metadata == null || metadata.size() == 0) {
-            return chapters;
+            return result;
         }
 
         var item = metadata[0];
+
+        // Extract title and author
+        var title = item.get("title");
+        if (title != null) {
+            result[:title] = title;
+        }
+
+        // Try parentTitle first (typical for audiobooks), fallback to grandparentTitle
+        var author = item.get("parentTitle");
+        if (author == null || author.equals("")) {
+            author = item.get("grandparentTitle");
+        }
+        if (author != null && !author.equals("")) {
+            result[:author] = author;
+        }
+
+        System.println("Book metadata: " + result[:title] + " by " + result[:author]);
+
+        // Extract chapters
         var mediaArray = item.get("Media");
         if (mediaArray == null || mediaArray.size() == 0) {
-            return chapters;
+            return result;
         }
 
         var media = mediaArray[0];
         var parts = media.get("Part");
         if (parts == null) {
-            return chapters;
+            return result;
         }
 
         // Extract chapter info from parts
@@ -371,10 +395,10 @@ class PlexLibraryService {
                 :size => part.get("size")              // bytes
             };
 
-            chapters.add(chapter);
+            result[:chapters].add(chapter);
         }
 
-        System.println("Parsed " + chapters.size() + " chapters");
-        return chapters;
+        System.println("Parsed " + result[:chapters].size() + " chapters");
+        return result;
     }
 }
