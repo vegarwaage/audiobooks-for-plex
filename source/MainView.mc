@@ -9,6 +9,7 @@ using Toybox.Time;
 using Toybox.System;
 
 class MainView extends WatchUi.View {
+    private var _errorMessage = null;
 
     function initialize() {
         View.initialize();
@@ -39,6 +40,9 @@ class MainView extends WatchUi.View {
         if (result[:success]) {
             System.println("SUCCESS: Loaded " + result[:books].size() + " books");
 
+            // Clear error message
+            _errorMessage = null;
+
             // Cache books to storage
             cacheBooks(result[:books]);
 
@@ -46,7 +50,16 @@ class MainView extends WatchUi.View {
             showLibraryMenu();
         } else {
             System.println("ERROR: " + result[:error]);
-            // Show error in UI
+
+            // Set error message
+            _errorMessage = result[:error];
+
+            // Still try to show menu with cached data
+            var cachedBooks = loadCachedBooks();
+            if (cachedBooks != null && cachedBooks.size() > 0) {
+                System.println("Using cached books despite error");
+                showLibraryMenu();
+            }
         }
 
         WatchUi.requestUpdate();
@@ -123,23 +136,44 @@ class MainView extends WatchUi.View {
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.clear();
 
-        // Draw placeholder text
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(
-            dc.getWidth() / 2,
-            dc.getHeight() / 2,
-            Graphics.FONT_MEDIUM,
-            "Audiobooks for Plex",
-            Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-        );
+        if (_errorMessage != null) {
+            // Show error message
+            dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(
+                dc.getWidth() / 2,
+                dc.getHeight() / 2,
+                Graphics.FONT_SMALL,
+                _errorMessage,
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
 
-        dc.drawText(
-            dc.getWidth() / 2,
-            dc.getHeight() * 0.7,
-            Graphics.FONT_SMALL,
-            "Loading...",
-            Graphics.TEXT_JUSTIFY_CENTER
-        );
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(
+                dc.getWidth() / 2,
+                dc.getHeight() * 0.7,
+                Graphics.FONT_XTINY,
+                "Using cached books",
+                Graphics.TEXT_JUSTIFY_CENTER
+            );
+        } else {
+            // Show loading message
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(
+                dc.getWidth() / 2,
+                dc.getHeight() / 2,
+                Graphics.FONT_MEDIUM,
+                "Audiobooks for Plex",
+                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+            );
+
+            dc.drawText(
+                dc.getWidth() / 2,
+                dc.getHeight() * 0.7,
+                Graphics.FONT_SMALL,
+                "Loading...",
+                Graphics.TEXT_JUSTIFY_CENTER
+            );
+        }
     }
 
     function onHide() {

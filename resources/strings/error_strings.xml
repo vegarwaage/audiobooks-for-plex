@@ -1,0 +1,7 @@
+<strings>
+    <string id="ErrorNoNetwork">No connection to Plex server</string>
+    <string id="ErrorNoToken">Auth token not configured</string>
+    <string id="ErrorLibraryNotFound">Audiobooks library not found</string>
+    <string id="ErrorGeneric">Error loading library</string>
+    <string id="OfflineMode">Offline - Using cached data</string>
+</strings>

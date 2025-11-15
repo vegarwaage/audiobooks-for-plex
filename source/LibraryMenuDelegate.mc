@@ -48,20 +48,30 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (result[:success]) {
             System.println("Library refreshed: " + result[:books].size() + " books");
 
-            // Cache new books
             cacheBooks(result[:books]);
 
             // Reload menu
             WatchUi.popView(WatchUi.SLIDE_DOWN);
 
-            // Show fresh menu
             var menu = new LibraryBrowserMenu();
             var delegate = new LibraryMenuDelegate();
             WatchUi.pushView(menu, delegate, WatchUi.SLIDE_UP);
         } else {
             System.println("Refresh failed: " + result[:error]);
-            // TODO: Show error to user
+
+            // Show error toast (stays on current menu)
+            showError(result[:error]);
         }
+    }
+
+    function showError(errorMessage) {
+        // Create simple confirmation showing error
+        var dialog = new WatchUi.Confirmation(errorMessage);
+        WatchUi.pushView(
+            dialog,
+            new ErrorDelegate(),
+            WatchUi.SLIDE_UP
+        );
     }
 
     function cacheBooks(books) {
@@ -89,5 +99,16 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
         storage.setLibrarySyncTime(now);
 
         System.println("Cached " + bookIds.size() + " books");
+    }
+}
+
+class ErrorDelegate extends WatchUi.ConfirmationDelegate {
+    function initialize() {
+        ConfirmationDelegate.initialize();
+    }
+
+    function onResponse(response) {
+        // Dismiss error dialog
+        return true;
     }
 }
