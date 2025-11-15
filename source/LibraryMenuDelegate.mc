@@ -121,11 +121,13 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
 
     private var _bookId;
     private var _bookTitle;
+    private var _progressView;
 
     function initialize(bookId, bookTitle) {
         ConfirmationDelegate.initialize();
         _bookId = bookId;
         _bookTitle = bookTitle;
+        _progressView = null;
     }
 
     function onResponse(response) {
@@ -161,6 +163,12 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
         var app = Application.getApp();
         var downloadManager = app.getDownloadManager();
 
+        // Show progress view
+        _progressView = new DownloadProgressView(_bookTitle, chapters.size());
+        var progressDelegate = new DownloadProgressDelegate(new Lang.Method(self, :onDownloadCancelled));
+
+        WatchUi.pushView(_progressView, progressDelegate, WatchUi.SLIDE_UP);
+
         downloadManager.downloadAudiobook(
             _bookId,
             chapters,
@@ -172,17 +180,46 @@ class DownloadConfirmationDelegate extends WatchUi.ConfirmationDelegate {
 
     function onDownloadProgress(progress) {
         System.println("Download progress: Chapter " + progress[:chapter] + "/" + progress[:total] + " (" + progress[:percent] + "%)");
-        // TODO: Show progress UI
+
+        if (_progressView != null) {
+            _progressView.updateProgress(progress[:chapter], progress[:percent]);
+        }
     }
 
     function onDownloadComplete(result) {
         System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
+
+        // Show completion message briefly
+        if (_progressView != null) {
+            _progressView.showComplete();
+        }
+
+        // Pop progress view
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
+
         launchMusicPlayer(result[:contentRefs]);
     }
 
     function onDownloadError(result) {
         System.println("Download error: " + result[:error] + " (chapter " + result[:chapter] + ")");
-        // TODO: Show error to user
+
+        // Pop progress view
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
+
+        // Show error dialog
+        var dialog = new WatchUi.Confirmation(result[:error]);
+        WatchUi.pushView(dialog, new ErrorDelegate(), WatchUi.SLIDE_UP);
+    }
+
+    function onDownloadCancelled() {
+        System.println("Download cancelled by user");
+
+        var app = Application.getApp();
+        var downloadManager = app.getDownloadManager();
+        downloadManager.cancel();
+
+        // Pop progress view
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 
     function launchMusicPlayer(contentRefs) {
