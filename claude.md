@@ -1,6 +1,6 @@
-# PlexRunner - Claude Code Development Guide
+# AudiobooksForPlex - Claude Code Development Guide
 
-**Project:** Audiobooks for Plex on Garmin Watches (PlexRunner)
+**Project:** Audiobooks for Plex on Garmin Watches
 **Target Device:** Garmin Forerunner 970
 **App Type:** AudioContentProviderApp
 **Status:** ✅ Feasibility Confirmed - Ready for Development
@@ -89,40 +89,6 @@ All Garmin Connect IQ documentation is stored locally in `/garmin-documentation/
 
 /garmin-documentation/core-topics/debugging-and-testing.md
   → Debugging patterns and simulator usage
-```
-
----
-
-## Architecture Overview
-
-### Three-Phase Model (Garmin Standard)
-
-**Phase 1: Sync Configuration**
-- User selects audiobooks to download
-- UI: On-watch browsing of Plex library
-- See: `/garmin-documentation/core-topics/ui-development.md`
-
-**Phase 2: Content Download**
-- Download from Plex API endpoints
-- Automatic AES-128 encryption
-- See: `/garmin-documentation/core-topics/networking.md`
-
-**Phase 3: Playback**
-- Native Music Player integration
-- ContentDelegate provides tracks
-- See: `/garmin-documentation/basics/app-types-detailed.md` (lines 579-636)
-
-### Required Classes
-
-```monkey-c
-// Base application
-class PlexRunnerApp extends Application.AudioContentProviderApp
-
-// Provides content to music player
-class PlexContentDelegate extends Media.ContentDelegate
-
-// Optional but recommended for background sync
-class PositionSyncService extends System.ServiceDelegate
 ```
 
 ---
@@ -236,71 +202,6 @@ POST {server}/:/timeline?ratingKey={id}&state=paused&time={ms}&X-Plex-Token={tok
 
 ---
 
-## Development Workflow
-
-### Phase 1: Core Foundation (Weeks 1-3)
-
-**Goal:** Download and play ONE audiobook
-
-**Tasks:**
-1. Create AudioContentProviderApp skeleton
-2. Implement Plex authentication
-3. Download single audiobook (hardcoded ID)
-4. Implement ContentDelegate
-5. Test playback on device
-6. Add local position tracking
-
-**Key files to reference:**
-- `/garmin-documentation/basics/app-types-detailed.md` (Audio Provider example)
-- `/garmin-documentation/core-topics/networking.md` (HTTP downloads)
-- `/garmin-documentation/core-topics/project-structure.md` (File organization)
-
-### Phase 2: Content Selection (Weeks 4-6)
-
-**Goal:** User can browse and select audiobooks
-
-**Tasks:**
-1. Fetch audiobook list from Plex
-2. Build on-watch UI for browsing
-3. Implement download queue
-4. Add progress indicators
-5. Storage management (delete old books)
-
-**Key files to reference:**
-- `/garmin-documentation/core-topics/ui-development.md` (Views, menus, layouts)
-- `/garmin-documentation/reference-guides/common-apis.md` (Quick UI patterns)
-
-### Phase 3: Position Sync (Weeks 7-8)
-
-**Goal:** Positions sync to Plex server
-
-**Tasks:**
-1. Implement background sync service
-2. POST to Plex Timeline API
-3. Handle offline queue
-4. Test multi-device continuity
-
-**Key files to reference:**
-- `/garmin-documentation/core-topics/backgrounding.md` (Background services)
-- `/garmin-documentation/core-topics/networking.md` (Section on Background Data Sync)
-
-### Phase 4: Polish (Weeks 9-11)
-
-**Goal:** Production-ready app
-
-**Tasks:**
-1. Error handling and retry logic
-2. Chapter navigation (multi-file)
-3. UI/UX improvements
-4. Battery/memory optimization
-5. Testing on real device
-6. Store submission
-
-**Key files to reference:**
-- `/garmin-documentation/core-topics/debugging-and-testing.md` (Testing patterns)
-- `/garmin-documentation/core-topics/profiling.md` (Performance optimization)
-
----
 
 ## Common Patterns
 
@@ -420,7 +321,7 @@ function onDownloadComplete(callback, responseCode, data) {
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
     <iq:application
         type="audio-content-provider-app"
-        entry="PlexRunnerApp"
+        entry="AudiobooksForPlexApp"
         id="YOUR_APP_ID"
         launcherIcon="@Drawables.LauncherIcon"
         minApiLevel="3.0.0">
@@ -493,15 +394,15 @@ function onDownloadComplete(callback, responseCode, data) {
 
 2. **Find settings file:**
    ```
-   Windows: C:\Users\[username]\AppData\Local\Temp\GARMIN\APPS\SETTINGS\PlexRunner.set
+   Windows: C:\Users\[username]\AppData\Local\Temp\GARMIN\APPS\SETTINGS\AudiobooksForPlex.set
    Mac:     Use: find /var/folders/ -name SETTINGS 2> /dev/null
-   Linux:   /tmp/GARMIN/APPS/SETTINGS/PlexRunner.set
+   Linux:   /tmp/GARMIN/APPS/SETTINGS/AudiobooksForPlex.set
    ```
 
 3. **Copy to watch:**
    ```
    Connect watch via USB
-   Copy PlexRunner.set to: /GARMIN/APPS/SETTINGS/
+   Copy AudiobooksForPlex.set to: /GARMIN/APPS/SETTINGS/
    Disconnect and restart watch
    ```
 
@@ -511,7 +412,7 @@ function onDownloadComplete(callback, responseCode, data) {
 
 **Method 2: Manual Creation**
 
-Create `PlexRunner.set` manually:
+Create `AudiobooksForPlex.set` manually:
 
 ```xml
 <?xml version="1.0"?>
@@ -522,7 +423,7 @@ Create `PlexRunner.set` manually:
 </properties>
 ```
 
-Copy directly to watch: `/GARMIN/APPS/SETTINGS/PlexRunner.set`
+Copy directly to watch: `/GARMIN/APPS/SETTINGS/AudiobooksForPlex.set`
 
 ### Application Properties Setup
 
@@ -555,10 +456,10 @@ if (libraryName == null || libraryName.equals("")) {
 
 ### Development Workflow Options
 
-**Option A: Hardcoded Values (Early Development)**
+**Option A: Hardcoded Values (Early Development) VALUES ARE EXAMPLES**
 ```monkey-c
 // Temporary hardcoded values for initial testing
-const SERVER_URL = "http://192.168.1.100:32400";
+const SERVER_URL = "http://192.168.1.10:32400";
 const AUTH_TOKEN = "test-token-123";
 const LIBRARY_NAME = "Audiobooks";
 
@@ -606,39 +507,6 @@ var serverUrl = Application.Properties.getValue("serverUrl");
 **Cons:**
 - ⚠️ Simulator limitations (no real audio playback)
 - ⚠️ Still need device testing eventually
-
-### Recommended Development Progression
-
-**Phase 1: MVP Core (Weeks 1-2)**
-```
-Use: Hardcoded values
-Why: Fast iteration, no settings complexity
-Focus: Get basic download and playback working
-```
-
-**Phase 2: Settings Integration (Week 3)**
-```
-Use: Manual .set files
-Why: Test real Properties system
-Focus: Validate settings read/write logic
-Create: properties.xml with all settings
-```
-
-**Phase 3: Beta Testing (Weeks 4-8)**
-```
-Use: Connect IQ Store beta release
-Why: Settings UI becomes available
-Focus: Real user testing with settings
-Users: Can configure via Garmin Connect app
-```
-
-**Phase 4: Production (Weeks 9+)**
-```
-Use: Full Connect IQ Store release
-Why: Settings fully integrated
-Users: Configure via Garmin Connect normally
-Sync: Settings sync automatically to watch
-```
 
 ### Testing Settings Checklist
 
@@ -698,7 +566,7 @@ Linux: Check /tmp/GARMIN/APPS/SETTINGS/
 
 ### Settings File Template
 
-**PlexRunner.set template for testing:**
+**AudiobooksForPlex.set template for testing:**
 ```xml
 <?xml version="1.0"?>
 <properties>
@@ -814,7 +682,7 @@ Lines: 150-250 (Permissions section with all types)
 
 ```
 /source/
-  PlexRunnerApp.mc           # AudioContentProviderApp entry point
+  AudiobooksForPlexApp.mc           # AudioContentProviderApp entry point
   PlexContentDelegate.mc     # ContentDelegate implementation
   PositionTracker.mc         # Position tracking logic
   PlexApi.mc                 # Plex API wrapper
@@ -869,21 +737,6 @@ monkey.jungle                # Build config
 
 ---
 
-## Success Metrics
-
-**MVP is successful when:**
-1. ✅ Can download ONE audiobook from Plex
-2. ✅ Playback works through native Music Player
-3. ✅ Position tracked locally and persists
-4. ✅ Runs on real Forerunner 970 device
-
-**Full app is successful when:**
-1. ✅ All success criteria from `/VISION.md` met
-2. ✅ Published to Connect IQ Store
-3. ✅ User can listen phone-free during runs
-
----
-
 ## External Resources (Only if Needed)
 
 **Garmin Official:**
@@ -909,18 +762,18 @@ monkey.jungle                # Build config
 
 **Build:**
 ```bash
-monkeyc -o bin/PlexRunner.prg -f monkey.jungle -y developer_key -d forerunner970
+monkeyc -o bin/AudiobooksForPlex.prg -f monkey.jungle -y developer_key -d forerunner970
 ```
 
 **Sideload:**
 ```bash
-# Copy bin/PlexRunner.prg to watch via USB
+# Copy bin/AudiobooksForPlex.prg to watch via USB
 ```
 
 **Test in simulator:**
 ```bash
 connectiq
-# Load PlexRunner.prg in simulator
+# Load AudiobooksForPlex.prg in simulator
 ```
 
 ---
