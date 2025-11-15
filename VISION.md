@@ -1,4 +1,4 @@
-# PlexRunner - Project Vision
+# AudiobooksForPlex - Project Vision
 
 **Author:** Vegar Waage
 **Created:** 2025-11-15
@@ -7,7 +7,7 @@
 
 ## Purpose
 
-PlexRunner brings audiobook listening from a personal Plex server to Garmin watches for phone-free listening during runs, workouts, and outdoor activities.
+AudiobooksForPlex brings audiobook listening from a personal Plex server to Garmin watches for phone-free listening during runs, workouts, and outdoor activities.
 
 The app eliminates the dependency on a phone connection by downloading audiobooks directly to the watch, enabling users to enjoy their personal audiobook library anywhere with just their watch and headphones.
 
@@ -19,7 +19,7 @@ The app eliminates the dependency on a phone connection by downloading audiobook
 
 **Download Audiobooks to Watch**
 - Connect to personal Plex server
-- Download selected audiobooks to watch storage
+- Download audiobooks to watch storage
 - Store audiobook metadata and chapter information locally
 - Support multiple audio formats (MP3, M4A, M4B, MP4, WAV)
 
@@ -181,12 +181,12 @@ Detect audio format from Plex metadata dynamically:
 
 ### Initial Setup
 
-1. Install PlexRunner from Garmin Connect IQ Store
+1. Install AudiobooksForPlex from Garmin Connect IQ Store
 2. Configure Plex server connection via Garmin Connect app settings:
    - Server URL
    - Auth token
    - Library name (optional)
-3. Open PlexRunner on watch and browse Plex library
+3. Open AudiobooksForPlex on watch and browse Plex library
 4. Select audiobooks to download
 5. Wait for audiobooks to download to watch storage
 
@@ -195,7 +195,7 @@ Detect audio format from Plex metadata dynamically:
 1. Start activity on watch (run, workout, etc.)
 2. Put in headphones
 3. Open Music Player
-4. Navigate to PlexRunner section
+4. Navigate to AudiobooksForPlex section
 5. Select audiobook and chapter
 6. Press play
 
@@ -212,7 +212,7 @@ Position tracking and syncing happens automatically in the background.
 
 ## Success Criteria
 
-PlexRunner succeeds when:
+AudiobooksForPlex succeeds when:
 
 - Users can download audiobooks from their personal Plex server to their Garmin watch
 - Audiobooks play through the native Music Player without phone connection
