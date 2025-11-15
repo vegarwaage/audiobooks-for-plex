@@ -72,30 +72,23 @@ class LibraryMenuDelegate extends WatchUi.Menu2InputDelegate {
     function onDownloadComplete(result) {
         System.println("Download complete! ContentRefs: " + result[:contentRefs].size());
 
-        // TEST: Create ContentDelegate and log
-        testContentDelegate(result[:contentRefs]);
+        // Launch Music Player with downloaded audiobook
+        launchMusicPlayer(result[:contentRefs]);
     }
 
-    function testContentDelegate(contentRefs) {
-        var delegate = new AudiobookContentDelegate(
-            "test_book_123",
-            "Foundation",
-            "Isaac Asimov",
-            contentRefs,
-            0  // Start at chapter 0
-        );
+    function launchMusicPlayer(contentRefs) {
+        var app = Application.getApp();
 
-        // Test getContent()
-        var content = delegate.getContent();
-        System.println("ContentIterator created successfully");
+        // For now, use hardcoded book info (will come from metadata in later step)
+        var bookId = "test_book_123";
+        var bookTitle = "Foundation";
+        var author = "Isaac Asimov";
 
-        // Test event handling (mock events)
-        // Use first contentRef as the ID for testing
-        var testRefId = contentRefs.size() > 0 ? contentRefs[0] : "test_ref_id";
-        delegate.onSong(testRefId, Media.SONG_EVENT_START, 0);
-        delegate.onSong(testRefId, Media.SONG_EVENT_PAUSE, 12345);
-        delegate.onSong(testRefId, Media.SONG_EVENT_SKIP_NEXT, 0);
-        delegate.onSong(testRefId, Media.SONG_EVENT_SKIP_PREVIOUS, 0);
+        // Play audiobook
+        app.playAudiobook(bookId, bookTitle, author, contentRefs, 0);
+
+        System.println("Audiobook registered with Music Player");
+        System.println("Open Music Player app to start playback");
     }
 
     function onDownloadError(result) {

@@ -1,18 +1,20 @@
 // ABOUTME: Main application entry point for AudiobooksForPlex
-// ABOUTME: Extends Application.AppBase to provide initial view
+// ABOUTME: Extends AudioContentProviderApp to integrate with Music Player
 
 using Toybox.Application;
 using Toybox.WatchUi;
 using Toybox.Lang;
+using Toybox.Media;
 
-class AudiobooksForPlexApp extends Application.AppBase {
+class AudiobooksForPlexApp extends Application.AudioContentProviderApp {
 
     private var _plexService;
     private var _storageManager;
     private var _downloadManager;
+    private var _currentContentDelegate;
 
     function initialize() {
-        AppBase.initialize();
+        AudioContentProviderApp.initialize();
         _plexService = new PlexLibraryService();
         _storageManager = new StorageManager();
 
@@ -34,6 +36,27 @@ class AudiobooksForPlexApp extends Application.AppBase {
         var view = new MainView();
         var delegate = new MainDelegate();
         return [view, delegate];
+    }
+
+    function playAudiobook(bookId, bookTitle, author, contentRefs, startChapter) {
+        System.println("Playing audiobook: " + bookTitle);
+
+        // Create and store ContentDelegate
+        // The Music Player will retrieve this via the app's getContentDelegate() method
+        _currentContentDelegate = new AudiobookContentDelegate(
+            bookId,
+            bookTitle,
+            author,
+            contentRefs,
+            startChapter
+        );
+
+        System.println("ContentDelegate created - audiobook ready for Music Player");
+        System.println("Note: Open native Music Player app to start playback");
+    }
+
+    function getCurrentContentDelegate() {
+        return _currentContentDelegate;
     }
 
     function getPlexService() {
